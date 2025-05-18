@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KickFlow – Campo Digital</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    .controls {
+      margin-bottom: 10px;
+    }
+    .field {
+      display: grid;
+      grid-template-columns: repeat(20, 30px);
+      grid-template-rows: repeat(15, 30px);
+      gap: 1px;
+      background-color: #ccc;
+    }
+    .cell {
+      width: 30px;
+      height: 30px;
+      background-color: #7fc96e;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 14px;
+      cursor: pointer;
+      position: relative;
+    }
+    .piece {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: #333;
+      position: absolute;
+    }
+    .piece.player1 { background-color: #007bff; }
+    .piece.player2 { background-color: #dc3545; }
+    .highlight {
+      outline: 2px solid yellow;
+    }
+    .turn-display {
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+    .dice-display {
+      margin-top: 10px;
+    }
+    button {
+      margin: 5px;
+      padding: 6px 12px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>KickFlow</h1>
+  <div class="turn-display" id="turnDisplay">Turno do Jogador 1</div>
+  <div class="controls">
+    <button onclick="rollDice()">Rolar Dado</button>
+    <span class="dice-display" id="diceResult">🎲</span>
+  </div>
+  <div class="field" id="field"></div>
+
+  <script>
+    const field = document.getElementById("field");
+    const diceResult = document.getElementById("diceResult");
+    const turnDisplay = document.getElementById("turnDisplay");
+    const rows = 15, cols = 20;
+    let selectedPiece = null;
+    let currentPlayer = 1;
+
+    const grid = [];
+
+    function createCell(x, y) {
+      const cell = document.createElement("div");
+      cell.classList.add("cell");
+      cell.dataset.x = x;
+      cell.dataset.y = y;
+
+      cell.addEventListener("click", () => {
+        if (selectedPiece && cell.children.length === 0) {
+          cell.appendChild(selectedPiece);
+          selectedPiece = null;
+          clearHighlights();
+          switchTurn();
+        } else if (cell.children.length > 0 && cell.children[0].classList.contains(`player${currentPlayer}`)) {
+          clearHighlights();
+          selectedPiece = cell.children[0];
+          cell.classList.add("highlight");
+        }
+      });
+
+      grid.push(cell);
+      return cell;
+    }
+
+    function clearHighlights() {
+      grid.forEach(cell => cell.classList.remove("highlight"));
+    }
+
+    function placeInitialPieces() {
+      const startingPositions = {
+        player1: [ [1,1],[2,2],[3,3],[4,2],[5,1],[6,3],[7,2],[8,1],[9,2],[10,3],[5,4] ],
+        player2: [ [1,15],[2,14],[3,13],[4,14],[5,15],[6,13],[7,14],[8,15],[9,14],[10,13],[5,12] ]
+      };
+      startingPositions.player1.forEach(([x,y]) => {
+        const cell = grid.find(c => c.dataset.x == x && c.dataset.y == y);
+        const piece = document.createElement("div");
+        piece.classList.add("piece", "player1");
+        cell.appendChild(piece);
+      });
+      startingPositions.player2.forEach(([x,y]) => {
+        const cell = grid.find(c => c.dataset.x == x && c.dataset.y == y);
+        const piece = document.createElement("div");
+        piece.classList.add("piece", "player2");
+        cell.appendChild(piece);
+      });
+    }
+
+    function rollDice() {
+      const roll = Math.floor(Math.random() * 6) + 1;
+      diceResult.textContent = `🎲 ${roll}`;
+    }
+
+    function switchTurn() {
+      currentPlayer = currentPlayer === 1 ? 2 : 1;
+      turnDisplay.textContent = `Turno do Jogador ${currentPlayer}`;
+    }
+
+    for (let y = 1; y <= rows; y++) {
+      for (let x = 1; x <= cols; x++) {
+        field.appendChild(createCell(x, y));
+      }
+    }
+
+    placeInitialPieces();
+  </script>
+</body>
+</html>
